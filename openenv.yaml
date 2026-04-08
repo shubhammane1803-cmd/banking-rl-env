@@ -3,6 +3,10 @@ version: 1.0.0
 sdk: docker
 app_port: 7860
 base_path: /
+endpoints:
+  reset: /reset
+  step: /step
+  health: /health
 tags:
   - banking
   - reinforcement-learning

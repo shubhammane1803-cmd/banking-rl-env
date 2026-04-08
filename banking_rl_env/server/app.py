@@ -18,12 +18,40 @@ app = FastAPI(
 # Session store: session_id -> BankingEnvironment instance
 environments: Dict[str, BankingEnvironment] = {}
 
+DEFAULT_SESSION = "default"
+
 
 @app.get("/")
 @app.get("/health")
 def health():
     return {"status": "healthy", "service": "IFI Banking RL Environment"}
 
+
+# ── OpenEnv standard endpoints (no session_id) ───────────────────────────────
+
+@app.post("/reset")
+def reset_default():
+    """OpenEnv standard reset — uses a single default session."""
+    env = BankingEnvironment()
+    environments[DEFAULT_SESSION] = env
+    obs = env.reset()
+    return obs.model_dump()
+
+
+@app.post("/step")
+def step_default(action: BankingAction):
+    """OpenEnv standard step — uses a single default session."""
+    env = environments.get(DEFAULT_SESSION)
+    if not env:
+        # Auto-create if missing
+        env = BankingEnvironment()
+        environments[DEFAULT_SESSION] = env
+        env.reset()
+    obs = env.step(action)
+    return obs.model_dump()
+
+
+# ── Session-based endpoints (optional, kept for compatibility) ────────────────
 
 @app.post("/reset/{session_id}")
 def reset(session_id: str):
