@@ -12,4 +12,4 @@ ENV PYTHONPATH=/app:/app/banking_rl_env
 EXPOSE 7860
 
 # Correct entrypoint using the main() function
-CMD ["uvicorn", "server.app:main", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
