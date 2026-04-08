@@ -1,0 +1,13 @@
+name: banking-rl-env
+version: 1.0.0
+sdk: docker
+app_port: 7860
+base_path: /
+tags:
+  - banking
+  - reinforcement-learning
+  - fraud-detection
+  - collections
+  - credit-management
+  - cash-optimization
+description: IFI Integrated Financial Intelligence — Banking RL Environment
