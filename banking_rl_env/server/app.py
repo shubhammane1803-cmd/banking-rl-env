@@ -9,10 +9,9 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from server.banking_environment import BankingEnvironment
 from models import BankingAction
 
-# Create the FastAPI app
 app = FastAPI(
     title="IFI Banking RL Environment",
-    description="Integrated Financial Intelligence - Banking RL Environment for OpenEnv"
+    description="Integrated Financial Intelligence - Banking RL Environment"
 )
 
 environments = {}
@@ -51,7 +50,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         if session_id in environments:
             del environments[session_id]
 
-# ←←← ADD THIS FUNCTION AT THE VERY BOTTOM ←←←
+# THIS IS REQUIRED BY THE HACKATHON VALIDATOR
 def main():
-    """Main entry point required by OpenEnv hackathon validator"""
+    """Main entry point required by OpenEnv"""
     return app
