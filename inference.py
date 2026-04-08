@@ -1,26 +1,23 @@
 import sys
-from pathlib import Path
+import os
+from typing import Dict, Any
 
-# Make sure Python can find your modules
-root = Path(__file__).parent
-sys.path.insert(0, str(root))
-sys.path.insert(0, str(root / "banking_rl_env"))
+sys.path.insert(0, os.getcwd())
+sys.path.insert(0, os.path.join(os.getcwd(), "banking_rl_env"))
 
 from banking_rl_env.server.banking_environment import BankingEnvironment
 from banking_rl_env.models import BankingAction
 
 class Env:
-    """This is the required bridge for OpenEnv hackathon"""
+    """OpenEnv Required Bridge Class"""
     def __init__(self):
         self.env = BankingEnvironment()
 
-    def reset(self):
-        """Reset the environment - required by OpenEnv"""
-        observation = self.env.reset()
-        return observation.model_dump()
+    def reset(self) -> Dict[str, Any]:
+        obs = self.env.reset()
+        return obs.model_dump()
 
-    def step(self, action: dict):
-        """Take one step in the environment - required by OpenEnv"""
-        action_obj = BankingAction(**action)
-        observation = self.env.step(action_obj)
-        return observation.model_dump()
+    def step(self, action_dict: Dict[str, Any]) -> Dict[str, Any]:
+        action = BankingAction(**action_dict)
+        obs = self.env.step(action)
+        return obs.model_dump()

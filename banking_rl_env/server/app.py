@@ -1,23 +1,13 @@
-import sys
-from pathlib import Path
+from fastapi import FastAPI
+from banking_rl_env.server.banking_environment import BankingEnvironment
+from banking_rl_env.models import BankingAction
 
-root = Path(__file__).parent.parent
-if str(root) not in sys.path:
-    sys.path.insert(0, str(root))
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from server.banking_environment import BankingEnvironment
-from models import BankingAction
-
-app = FastAPI(
-    title="IFI Banking RL Environment",
-    description="Integrated Financial Intelligence - Banking RL Environment"
-)
+app = FastAPI(title="IFI Banking RL Environment")
 
 environments = {}
 
-@app.get("/")
 @app.get("/health")
+@app.get("/")
 def health():
     return {"status": "healthy", "message": "IFI Banking RL Environment is running"}
 
@@ -35,22 +25,7 @@ def step(session_id: str, action: BankingAction):
     obs = env.step(action)
     return obs.model_dump()
 
-@app.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    await websocket.accept()
-    env = BankingEnvironment()
-    environments[session_id] = env
-    try:
-        while True:
-            data = await websocket.receive_json()
-            action = BankingAction(**data)
-            obs = env.step(action)
-            await websocket.send_json(obs.model_dump())
-    except WebSocketDisconnect:
-        if session_id in environments:
-            del environments[session_id]
-
-# THIS IS REQUIRED BY THE HACKATHON VALIDATOR
+# REQUIRED by OpenEnv validator
 def main():
-    """Main entry point required by OpenEnv"""
+    """Main entry point - DO NOT call uvicorn.run here"""
     return app

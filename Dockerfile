@@ -1,4 +1,3 @@
-
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -12,5 +11,5 @@ ENV PYTHONPATH=/app:/app/banking_rl_env
 
 EXPOSE 7860
 
-# Use the 'main' function we added in server/app.py
+# Correct entrypoint using the main() function
 CMD ["uvicorn", "server.app:main", "--host", "0.0.0.0", "--port", "7860"]
