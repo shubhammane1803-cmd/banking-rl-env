@@ -1,8 +1,8 @@
 ---
 title: IFI Banking RL Environment - OpenEnv Hackathon Submission
 emoji: 🚀
-colorFrom: "#0A2647"
-colorTo: "#205295"
+colorFrom: indigo
+colorTo: blue
 sdk: docker
 app_port: 7860
 ---
