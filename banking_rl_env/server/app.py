@@ -1,73 +1,57 @@
-# banking_rl_env/server/app.py
 import sys
-import uvicorn
-from typing import Dict
-from fastapi import FastAPI, HTTPException
+from pathlib import Path
 
-sys.path.insert(0, '/content')
+root = Path(__file__).parent.parent
+if str(root) not in sys.path:
+    sys.path.insert(0, str(root))
 
-from banking_rl_env.server.banking_environment import BankingEnvironment
-from banking_rl_env.models import BankingAction
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from server.banking_environment import BankingEnvironment
+from models import BankingAction
 
+# Create the FastAPI app
 app = FastAPI(
     title="IFI Banking RL Environment",
-    description="Integrated Financial Intelligence — OpenEnv compliant Banking RL Environment",
-    version="1.0.0"
+    description="Integrated Financial Intelligence - Banking RL Environment for OpenEnv"
 )
 
-# Session store: session_id -> BankingEnvironment instance
-environments: Dict[str, BankingEnvironment] = {}
-
-DEFAULT_SESSION = "default"
+environments = {}
 
 @app.get("/")
-def root():
-    return {"status": "running"}
-
 @app.get("/health")
 def health():
-    return {"status": "healthy", "service": "IFI Banking RL Environment"}
-
-# ── OpenEnv standard endpoints (no session_id) ────────────────────────────────
-
-@app.post("/reset")
-def reset_default():
-    """OpenEnv standard reset — uses a single default session."""
-    env = BankingEnvironment()
-    environments[DEFAULT_SESSION] = env
-    obs = env.reset()
-    return obs.model_dump()
-
-@app.post("/step")
-def step_default(action: BankingAction):
-    """OpenEnv standard step — uses a single default session."""
-    env = environments.get(DEFAULT_SESSION)
-    if not env:
-        env = BankingEnvironment()
-        environments[DEFAULT_SESSION] = env
-        env.reset()
-    obs = env.step(action)
-    return obs.model_dump()
-
-# ── Session-based endpoints ────────────────────────────────
+    return {"status": "healthy", "message": "IFI Banking RL Environment is running"}
 
 @app.post("/reset/{session_id}")
 def reset(session_id: str):
     env = BankingEnvironment()
     environments[session_id] = env
-    obs = env.reset()
-    return obs.model_dump()
+    return env.reset().model_dump()
 
 @app.post("/step/{session_id}")
 def step(session_id: str, action: BankingAction):
     env = environments.get(session_id)
     if not env:
-        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+        return {"error": "Session not found"}
     obs = env.step(action)
     return obs.model_dump()
 
-def main():
-    uvicorn.run("banking_rl_env.server.app:app", host="0.0.0.0", port=7860, reload=False)
+@app.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    await websocket.accept()
+    env = BankingEnvironment()
+    environments[session_id] = env
+    try:
+        while True:
+            data = await websocket.receive_json()
+            action = BankingAction(**data)
+            obs = env.step(action)
+            await websocket.send_json(obs.model_dump())
+    except WebSocketDisconnect:
+        if session_id in environments:
+            del environments[session_id]
 
-if __name__ == "__main__":
-    main()
+# ←←← ADD THIS FUNCTION AT THE VERY BOTTOM ←←←
+def main():
+    """Main entry point required by OpenEnv hackathon validator"""
+    return app
