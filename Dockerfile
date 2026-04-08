@@ -1,16 +1,12 @@
+
 FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . /app
 
-COPY . .
-
-ENV PYTHONPATH=/app
+RUN pip install --no-cache-dir fastapi uvicorn
 
 EXPOSE 7860
 
-# ENTRY POINT — OpenEnv validator requires "main:app"
-# cache-bust: v4
 CMD ["python", "main.py"]

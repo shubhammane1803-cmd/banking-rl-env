@@ -10,6 +10,9 @@ from banking_rl_env.server.banking_environment import BankingEnvironment
 from banking_rl_env.models import BankingAction
 
 app = FastAPI(
+    @app.get("/")
+def root():
+    return {"status": "running"}
     title="IFI Banking RL Environment",
     description="Integrated Financial Intelligence — OpenEnv compliant Banking RL Environment",
     version="1.0.0"
